@@ -5,12 +5,12 @@
 .buscador-api .button:hover, .buscador-api .button:focus, .buscador-api .button:active { background:#1EA2E4; border-color:#1787BB; color:#fff; }
 .buscador-api .button:focus { box-shadow:0 0 0 2px rgba(30,162,228,.25); }
 
-/* En pantallas pequenas, permitir salto de linea */
+/* En pantallas pequeñas, permitir salto de línea */
 @media (max-width: 480px) {
   .buscador-api .wp-block-group__inner-container { flex-wrap:wrap; }
 }
 
-/* Spinner en boton */
+/* Spinner en botón */
 .button.is-busy { opacity:.9; }
 .ba-spinner {
   width:16px; height:16px;
@@ -19,9 +19,10 @@
   animation: ba-spin .8s linear infinite;
 }
 @keyframes ba-spin { to { transform: rotate(360deg); } }
+
 .ba-resultados ul { margin:.5rem 0 0 1rem; list-style:disc; }
 
-/* Acordeon de resultados */
+/* Acordeón de resultados */
 .ba-accordion {
   width:100%;
   border:1px solid #ccd0d4;
@@ -148,7 +149,6 @@
 
 .ba-resultados--datatables .dataTables_wrapper .dataTables_info { margin-top:.5rem; }
 
-
 .ba-resultados--datatables table.dataTable thead tr.ba-filters-row th {
   padding: 0.35rem 0.5rem;
 }
@@ -161,19 +161,38 @@
   font-size: 0.85rem;
 }
 
-
-
-
 .ba-nomenclature-desc {
   margin-top: 0.35rem;
   font-size: 0.9em;
   color: #3c434a;
 }
 
+/* ==========================
+   Tablas de dispositivos BA
+   ========================== */
 
-.ba-nomenclature-desc {
-  margin-top: 0.35rem;
-  font-size: 0.9em;
-  color: #3c434a;
+/* Ajustes básicos */
+.ba-devices-table {
+  width: 100%;
+  max-width: 100%;
+  border-collapse: collapse;
 }
 
+/* Botón de control de detalles */
+.ba-devices-table td.dt-control {
+  cursor: pointer;
+  width: 32px;
+  text-align: center;
+}
+
+/* Fila de detalles */
+.ba-device-details td {
+  padding: 1rem;
+  background-color: #fafafa;
+  border-top: 1px solid #ccd0d4;
+}
+
+/* Resaltar fila expandida */
+.ba-device-row.is-expanded {
+  background-color: #f9f9f9;
+}

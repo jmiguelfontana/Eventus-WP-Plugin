@@ -8,8 +8,19 @@ Author: UDITrace
 
 if (!defined('ABSPATH')) exit;
 
-require_once plugin_dir_path(__FILE__) . 'includes/admin-settings.php';
-require_once plugin_dir_path(__FILE__) . 'includes/shortcode-formulario.php';
+// Cargar clases
+require_once plugin_dir_path(__FILE__) . 'includes/class-ba-device-renderer.php';
+require_once plugin_dir_path(__FILE__) . 'includes/class-ba-device-rowbuilder.php';
+require_once plugin_dir_path(__FILE__) . 'includes/class-ba-device-detailrenderer.php';
+require_once plugin_dir_path(__FILE__) . 'includes/class-ba-device-extractor.php';
+require_once plugin_dir_path(__FILE__) . 'includes/class-ba-device-scripts.php';
+require_once plugin_dir_path(__FILE__) . 'includes/class-ba-device-table.php';
+require_once plugin_dir_path(__FILE__) . 'includes/class-ba-device-translator.php';
+
+// Cargar settings y shortcode
+//require_once plugin_dir_path(__FILE__) . 'includes/admin-settings.php';
+require_once plugin_dir_path(__FILE__) . 'includes/class-ba-admin-settings.php';
+require_once plugin_dir_path(__FILE__) . 'includes/class-ba-shortcode-search.php';
 
 register_activation_hook(__FILE__, 'ba_eventusapi_activate');
 
