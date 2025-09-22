@@ -1,10 +1,15 @@
-<?php
+﻿<?php
 if (!defined('ABSPATH')) {
     exit;
 }
 
 class BA_Device_Renderer {
     private static $detailsScriptPrinted = false;
+    private static $preferredLocale = '';
+
+    public static function set_preferred_locale($locale) {
+        self::$preferredLocale = is_string($locale) ? trim($locale) : '';
+    }
 
     public static function render_items(array $items) {
         if (empty($items)) {
@@ -54,8 +59,11 @@ class BA_Device_Renderer {
         $versionModel  = self::extract_identifier_value_by_keywords($item, ['version', 'model']);
         $catalogNumber = self::extract_identifier_value_by_keywords($item, ['catalog']);
 
+        // Do not append locale in header display name
+        $displayName = ($name !== '') ? $name : '';
+
         return [
-            'display_name' => $name !== '' ? $name : ($mainId !== '' ? $mainId : 'Producto ' . ($idx + 1)),
+            'display_name' => $displayName !== '' ? $displayName : ($mainId !== '' ? $mainId : 'Producto ' . ($idx + 1)),
             'main_id' => $mainId,
             'manufacturer' => $manufacturer,
             'version_model' => $versionModel,
@@ -99,6 +107,18 @@ class BA_Device_Renderer {
             return isset($item['name']) ? (string) $item['name'] : '';
         }
 
+        // Prefer translation matching the selected locale
+        if (self::$preferredLocale !== '') {
+            foreach ($item['translations'] as $translation) {
+                if (!is_array($translation) || empty($translation['name'])) { continue; }
+                $tloc = self::find_locale_in_translation($translation);
+                if ($tloc !== '' && strcasecmp($tloc, self::$preferredLocale) === 0) {
+                    return (string) $translation['name'];
+                }
+            }
+        }
+
+        // Fallback: first available name
         foreach ($item['translations'] as $translation) {
             if (is_array($translation) && !empty($translation['name'])) {
                 return (string) $translation['name'];
@@ -108,11 +128,81 @@ class BA_Device_Renderer {
         return isset($item['name']) ? (string) $item['name'] : '';
     }
 
+    private static function find_locale_in_translation($translation) {
+        if (!is_array($translation)) {
+            return '';
+        }
+        if (!empty($translation['locale']) && is_string($translation['locale'])) {
+            return trim($translation['locale']);
+        }
+        if (!empty($translation['language'])) {
+            $lang = $translation['language'];
+            if (is_array($lang)) {
+                $candidates = [
+                    $lang['locale'] ?? '',
+                    $lang['code'] ?? '',
+                    $lang['ref'] ?? '',
+                    $lang['name'] ?? '',
+                ];
+                foreach ($candidates as $cand) {
+                    $cand = is_string($cand) ? trim($cand) : '';
+                    if ($cand !== '') {
+                        return $cand;
+                    }
+                }
+            } elseif (is_string($lang)) {
+                $lang = trim($lang);
+                if ($lang !== '') {
+                    return $lang;
+                }
+            }
+        }
+        return '';
+    }
+
+    private static function get_locale_for_name_translation(array $item) {
+        if (empty($item['translations']) || !is_array($item['translations'])) {
+            return '';
+        }
+        if (self::$preferredLocale !== '') {
+            foreach ($item['translations'] as $translation) {
+                if (!is_array($translation) || empty($translation['name'])) { continue; }
+                $loc = self::find_locale_in_translation($translation);
+                if ($loc !== '' && strcasecmp($loc, self::$preferredLocale) === 0) {
+                    return $loc;
+                }
+            }
+        }
+        foreach ($item['translations'] as $translation) {
+            if (is_array($translation) && !empty($translation['name'])) {
+                return self::find_locale_in_translation($translation);
+            }
+        }
+        return '';
+    }
+
     private static function extract_translation_description(array $item) {
         if (empty($item['translations']) || !is_array($item['translations'])) {
             return isset($item['description']) ? (string) $item['description'] : '';
         }
 
+        // Prefer translation matching the selected locale
+        if (self::$preferredLocale !== '') {
+            foreach ($item['translations'] as $translation) {
+                if (!is_array($translation)) { continue; }
+                $tloc = self::find_locale_in_translation($translation);
+                if ($tloc !== '' && strcasecmp($tloc, self::$preferredLocale) === 0) {
+                    if (!empty($translation['description'])) {
+                        return (string) $translation['description'];
+                    }
+                    if (!empty($translation['text'])) {
+                        return (string) $translation['text'];
+                    }
+                }
+            }
+        }
+
+        // Fallback order
         foreach ($item['translations'] as $translation) {
             if (!is_array($translation)) {
                 continue;
@@ -146,24 +236,35 @@ class BA_Device_Renderer {
                 $text = (string) $translation['text'];
             }
 
-            if ($text === '') {
-                continue;
+            $label = '';
+            if (!empty($translation['language']) && is_array($translation['language']) && !empty($translation['language']['name'])) {
+                $label = (string) $translation['language']['name'];
             }
 
-            $label = '';
-            if (!empty($translation['language']['name'])) {
-                $label = (string) $translation['language']['name'];
-            } elseif (!empty($translation['language']['code'])) {
-                $label = (string) $translation['language']['code'];
+            $locale = self::find_locale_in_translation($translation);
+            if (self::$preferredLocale !== '' && $locale !== '' && strcasecmp($locale, self::$preferredLocale) !== 0) {
+                continue; // filter to selected locale only
             }
 
             $descriptions[] = [
-                'text'  => $text,
-                'label' => $label,
+                'name'        => $text,
+                'description' => $label,
+                'locale'      => $locale,
             ];
         }
 
         return $descriptions;
+    }
+
+    private static function guess_locale_from_translations(array $item) {
+        if (empty($item['translations']) || !is_array($item['translations'])) {
+            return '';
+        }
+        foreach ($item['translations'] as $translation) {
+            $loc = self::find_locale_in_translation($translation);
+            if ($loc !== '') { return $loc; }
+        }
+        return '';
     }
 
     private static function extract_main_identifier(array $item) {
@@ -276,27 +377,38 @@ class BA_Device_Renderer {
             'lang'        => '',
         ];
 
-        $firstTranslation = null;
+        $chosen = null;
         if (!empty($term['translations']) && is_array($term['translations'])) {
-            $candidate = $term['translations'][0] ?? null;
-            if (is_array($candidate)) {
-                $firstTranslation = $candidate;
+            if (self::$preferredLocale !== '') {
+                foreach ($term['translations'] as $t) {
+                    if (!is_array($t)) { continue; }
+                    $tloc = '';
+                    if (!empty($t['locale'])) { $tloc = trim((string)$t['locale']); }
+                    else { $tloc = self::find_locale_in_translation($t); }
+                    if ($tloc !== '' && strcasecmp($tloc, self::$preferredLocale) === 0) { $chosen = $t; break; }
+                }
+            }
+            if (!$chosen) {
+                $cand = $term['translations'][0] ?? null;
+                if (is_array($cand)) { $chosen = $cand; }
             }
         }
 
-        if ($firstTranslation) {
-            if (!empty($firstTranslation['name'])) {
-                $data['term'] = (string) $firstTranslation['name'];
+        if ($chosen) {
+            if (!empty($chosen['name'])) {
+                $data['term'] = (string) $chosen['name'];
             }
-            if (!empty($firstTranslation['description'])) {
-                $data['description'] = (string) $firstTranslation['description'];
+            if (!empty($chosen['description'])) {
+                $data['description'] = (string) $chosen['description'];
             }
-            if (!empty($firstTranslation['language']['code'])) {
-                $data['lang'] = (string) $firstTranslation['language']['code'];
-            } elseif (!empty($firstTranslation['language']['name'])) {
-                $data['lang'] = (string) $firstTranslation['language']['name'];
-            } elseif (!empty($firstTranslation['language'])) {
-                $data['lang'] = (string) $firstTranslation['language'];
+            if (!empty($chosen['locale'])) {
+                $data['lang'] = (string) $chosen['locale'];
+            } elseif (!empty($chosen['language']['code'])) {
+                $data['lang'] = (string) $chosen['language']['code'];
+            } elseif (!empty($chosen['language']['name'])) {
+                $data['lang'] = (string) $chosen['language']['name'];
+            } elseif (!empty($chosen['language'])) {
+                $data['lang'] = (string) $chosen['language'];
             }
         }
 
@@ -441,6 +553,7 @@ class BA_Device_Renderer {
 
     private static function render_device_overview_table(array $item) {
         $name         = self::extract_translation_name($item);
+        $nameLoc      = self::get_locale_for_name_translation($item);
         $description  = self::extract_translation_description($item);
         $descriptions = self::collect_translation_descriptions($item);
         $manufacturer = self::build_manufacturer_label($item);
@@ -453,25 +566,59 @@ class BA_Device_Renderer {
 
         echo '<table class="widefat fixed striped" style="max-width:100%;">';
         echo '<tbody>';
-        if ($name !== '') {
-            echo '<tr><th style="width:220px;">Nombre</th><td>' . esc_html($name) . '</td></tr>';
+
+        // Build device description (first available) to show under Name
+        $devDescText = '';
+        $devDescLocale = '';
+        if (!empty($descriptions)) {
+            foreach ($descriptions as $desc) {
+                $t = isset($desc['name']) ? trim((string) $desc['name']) : '';
+                if ($t !== '') { $devDescText = $t; $devDescLocale = isset($desc['locale']) ? trim((string)$desc['locale']) : ''; break; }
+            }
+        }
+        if ($devDescText === '' && $description !== '') {
+            $devDescText = $description;
+            $devDescLocale = self::guess_locale_from_translations($item);
         }
 
-        echo '<tr><th>Descripcion</th><td>';
+        if ($name !== '') {
+            $suffix = $nameLoc !== '' ? ' (' . esc_html($nameLoc) . ')' : '';
+            $cell  = esc_html($name) . $suffix;
+            if ($devDescText !== '') {
+                $cell .= '<div class="ba-nomenclature-desc">' . esc_html($devDescText);
+                if ($devDescLocale !== '') { $cell .= ' (' . esc_html($devDescLocale) . ')'; }
+                $cell .= '</div>';
+            }
+            echo '<tr><th style="width:220px;">Nombre</th><td>' . $cell . '</td></tr>';
+        }
+
+if (false) {         echo '<tr><th>Descripción</th><td>';
         if (!empty($descriptions)) {
             echo '<div class="ba-translation-descriptions">';
+            $printed = false;
             foreach ($descriptions as $desc) {
-                if (empty($desc['text'])) {
+                $text = isset($desc['name']) ? trim((string) $desc['name']) : '';
+                if ($text === '') {
                     continue;
                 }
-                $label = !empty($desc['label']) ? ' (' . esc_html($desc['label']) . ')' : '';
-                echo '<div>' . esc_html($desc['text']) . $label . '</div>';
+                $locale = isset($desc['locale']) ? trim((string) $desc['locale']) : '';
+                $suffix = ($locale !== '') ? ' (' . esc_html($locale) . ')' : '';
+                echo '<div>' . esc_html($text) . $suffix . '</div>';
+                $printed = true;
+            }
+            if (!$printed) {
+                echo ($description !== '' ? esc_html($description) : '-');
             }
             echo '</div>';
         } else {
-            echo ($description !== '' ? esc_html($description) : '-');
+            if ($description !== '') {
+                $loc = self::guess_locale_from_translations($item);
+                echo esc_html($description) . ($loc !== '' ? ' (' . esc_html($loc) . ')' : '');
+            } else {
+                echo '-';
+            }
         }
-        echo '</td></tr>';
+        echo '</td></tr>'; }
 
         if ($manufacturer !== '') {
             echo '<tr><th>Fabricante</th><td>' . esc_html($manufacturer) . '</td></tr>';

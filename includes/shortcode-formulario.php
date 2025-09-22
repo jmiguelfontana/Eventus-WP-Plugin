@@ -79,6 +79,7 @@ function ba_render_search_form() {
             <label for="ba-term" class="screen-reader-text">Termino de busqueda</label>
             <input id="ba-term" class="wp-block-search__input" type="text" name="termino_busqueda"
                    placeholder="Primary DI, Version, Model, Catalog Number..." required />
+            
             <button type="submit" name="buscar_api" class="button button-primary">Buscar</button>
         </div>
     </form>
@@ -243,7 +244,7 @@ function ba_ajax_datatables_search() {
         wp_send_json(['data' => [], 'error' => esc_html__('Acceso no permitido.', 'eventusapi')], 403);
     }
 
-    $term = isset($_POST['term']) ? sanitize_text_field(wp_unslash($_POST['term'])) : '';
+    $term   = isset($_POST['term']) ? sanitize_text_field(wp_unslash($_POST['term'])) : '';
     if ($term === '') {
         wp_send_json(['data' => [], 'error' => esc_html__('Introduce un termino de busqueda.', 'eventusapi')]);
     }
