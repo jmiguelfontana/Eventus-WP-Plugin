@@ -1,16 +1,16 @@
-﻿.buscador-api { margin: 1rem 0 2rem; }
+.buscador-api { margin: 1rem 0 2rem; }
 .buscador-api .wp-block-group__inner-container { display:flex; gap:.75rem; align-items:center; flex-wrap:nowrap; }
 .buscador-api .wp-block-search__input { flex:1 1 auto; min-width:260px; padding:.5rem .75rem; border:1px solid var(--wp--preset--color--contrast-3, #cfcfcf); border-radius:4px; }
 .buscador-api .button { flex:0 0 auto; line-height:1; padding:.6rem 1rem; border-radius:4px; background:#1EA2E4; border:1px solid #1787BB; color:#fff; transition:background-color .15s ease, border-color .15s ease, color .15s ease; }
 .buscador-api .button:hover, .buscador-api .button:focus, .buscador-api .button:active { background:#1EA2E4; border-color:#1787BB; color:#fff; }
 .buscador-api .button:focus { box-shadow:0 0 0 2px rgba(30,162,228,.25); }
 
-/* En pantallas pequeñas, permitir salto de línea */
+/* En pantallas peque�as, permitir salto de l�nea */
 @media (max-width: 480px) {
   .buscador-api .wp-block-group__inner-container { flex-wrap:wrap; }
 }
 
-/* Spinner en botón */
+/* Spinner en bot�n */
 .button.is-busy { opacity:.9; }
 .ba-spinner {
   width:16px; height:16px;
@@ -22,7 +22,7 @@
 
 .ba-resultados ul { margin:.5rem 0 0 1rem; list-style:disc; }
 
-/* Acordeón de resultados */
+/* Acorde�n de resultados */
 .ba-accordion {
   width:100%;
   border:1px solid #ccd0d4;
@@ -179,14 +179,20 @@
    Tablas de dispositivos BA
    ========================== */
 
-/* Ajustes básicos */
+/* Ajustes b�sicos */
 .ba-devices-table {
   width: 100%;
   max-width: 100%;
   border-collapse: collapse;
 }
 
-/* Botón de control de detalles */
+.ba-devices-table th,
+.ba-devices-table td {
+  border-left: none !important;
+  border-right: none !important;
+}
+
+/* Bot�n de control de detalles */
 .ba-devices-table td.dt-control {
   cursor: pointer;
   width: 32px;
@@ -204,3 +210,17 @@
 .ba-device-row.is-expanded {
   background-color: #f9f9f9;
 }
+.ba-resultados--datatables table.dataTable th.dt-actions,
+.ba-resultados--datatables table.dataTable td.dt-actions {
+  text-align: center;
+}
+.ba-resultados--datatables table.dataTable td.dt-actions .button {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+
