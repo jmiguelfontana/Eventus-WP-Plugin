@@ -55,6 +55,7 @@ class BA_Shortcode_Search {
                 'emptyTerm' => __('Introduce un término de búsqueda.', 'eventusapi'),
                 'noDetails' => __('Sin detalles disponibles.', 'eventusapi'),
                 'headers' => [
+                    'id'          => __('ID', 'eventusapi'),
                     'name'        => __('Nombre del dispositivo', 'eventusapi'),
                     'primaryId'   => __('Primary ID', 'eventusapi'),
                     'manufacturer'=> __('Fabricante', 'eventusapi'),
@@ -92,9 +93,6 @@ class BA_Shortcode_Search {
             printf('<div class="notice notice-error"><p>%s</p></div>', esc_html($items->get_error_message()));
         } elseif (empty($items)) {
             echo '<div class="notice notice-warning"><p>' . esc_html__('Sin resultado.', 'eventusapi') . '</p></div>';
-        } else {
-            echo '<h3>' . esc_html__('Resultados', 'eventusapi') . '</h3>';
-            BA_Device_Renderer::render_items($items);
         }
         echo '</div>';
     }
@@ -178,12 +176,12 @@ class BA_Shortcode_Search {
         $rows = [];
         foreach ($items as $i => $item) {
             $rows[] = [
+                'id'             => $item['id']             ?? '',
                 'deviceName'     => $item['deviceName']     ?? '',
                 'primaryId'      => $item['primaryId']      ?? '',
                 'manufacturer'   => $item['manufacturer']   ?? '',
                 'version'        => $item['version']        ?? '',
-                'catalogNumber'  => $item['catalogNumber']  ?? '',
-                'details_html'   => '<em>Detalles disponibles al ampliar…</em>',
+                'catalogNumber'  => $item['catalogNumber']  ?? ''
             ];
         }
 
