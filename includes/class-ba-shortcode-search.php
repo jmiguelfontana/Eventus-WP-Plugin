@@ -81,25 +81,6 @@ class BA_Shortcode_Search {
                 <button type="submit" name="buscar_api" class="button button-primary"><?php esc_html_e('Buscar', 'eventusapi'); ?></button>
             </div>
         </form>
-        <script>
-        (function(){
-            var form = document.querySelector('form.buscador-api');
-            if (!form) return;
-            form.addEventListener('submit', function(){
-                var btn = form.querySelector('button[name="buscar_api"]');
-                if (!btn) return;
-                btn.classList.add('is-busy');
-                btn.setAttribute('aria-busy','true');
-                btn.disabled = true;
-                if (!btn.querySelector('.ba-spinner')) {
-                    var sp = document.createElement('span');
-                    sp.className = 'ba-spinner';
-                    sp.setAttribute('aria-hidden','true');
-                    btn.appendChild(sp);
-                }
-            }, { passive: true });
-        })();
-        </script>
         <?php
     }
 
@@ -124,15 +105,14 @@ class BA_Shortcode_Search {
             return [];
         }
 
-        $url  = self::build_url($endpoint, $term);
+        $url  = self::build_url($endpoint, $term);        
         $args = self::build_args($url, $api_key);
         $resp = self::http_get_body($url, $args);
 
         if (is_wp_error($resp)) return $resp;
         if (empty($resp)) return [];
 
-        $items = self::parse_items($resp);
-        return is_array($items) ? array_values(array_filter($items, [__CLASS__, 'item_has_relevant_data'])) : [];
+        return self::parse_items($resp);
     }
 
     public static function build_url($endpoint, $term) {
@@ -158,23 +138,13 @@ class BA_Shortcode_Search {
     public static function http_get_body($url, $args) {
         $response = wp_remote_get($url, $args);
         if (is_wp_error($response)) {
-            if ($response->get_error_code() === 'http_request_failed' &&
-                strpos($response->get_error_message(), 'timed out') !== false) {
-                return new WP_Error('ba_timeout', __('La solicitud a la API superó el tiempo de espera configurado.', 'eventusapi'));
-            }
             return $response;
         }
         $code = wp_remote_retrieve_response_code($response);
         $body = wp_remote_retrieve_body($response);
         if ($code === 404 || $code === 204) return '';
         if ($code < 200 || $code >= 300 || empty($body)) {
-            $msg = sprintf(__('Error de API (%d).', 'eventusapi'), $code);
-            $decoded = json_decode($body, true);
-            if (json_last_error() === JSON_ERROR_NONE) {
-                if (!empty($decoded['message'])) $msg .= ' ' . $decoded['message'];
-                elseif (!empty($decoded['error'])) $msg .= ' ' . $decoded['error'];
-            }
-            return new WP_Error('ba_bad_status', $msg);
+            return new WP_Error('ba_bad_status', sprintf(__('Error de API (%d).', 'eventusapi'), $code));
         }
         return $body;
     }
@@ -182,26 +152,7 @@ class BA_Shortcode_Search {
     public static function parse_items($raw) {
         $decoded = json_decode((string) $raw, true);
         if (json_last_error() !== JSON_ERROR_NONE) return [];
-        $payload = $decoded['data'] ?? $decoded;
-        return is_array($payload)
-            ? (array_keys($payload) !== range(0, count($payload)-1) ? [$payload] : $payload)
-            : [];
-    }
-
-    public static function item_has_relevant_data($item) {
-        if (!is_array($item)) return false;
-        if (!empty($item['translations'][0]['name'])) return true;
-        if (!empty($item['manufacturer']['name']) || !empty($item['manufacturer']['ref'])) return true;
-        if (!empty($item['identifiers'])) {
-            foreach ((array) $item['identifiers'] as $id) {
-                if (!empty($id['ref'])) return true;
-                if (!empty($id['type']['name']) || !empty($id['type']['ref'])) return true;
-            }
-        }
-        if (!empty($item['nomenclaturesTerms'][0]['nomenclatureTerm']['translations'][0]['name'])) return true;
-        if (!empty($item['riskClass'])) return true;
-        if (array_key_exists('implantable', $item)) return true;
-        return false;
+        return $decoded['data'] ?? $decoded;
     }
 
     /** ===== Ajax ===== */
@@ -216,7 +167,7 @@ class BA_Shortcode_Search {
             wp_send_json(['data' => [], 'error' => __('Introduce un término de búsqueda.', 'eventusapi')]);
         }
 
-        $endpoint = get_option('ba_api_search_endpoint', ''); // 👈 ahora endpoint de búsqueda
+        $endpoint = get_option('ba_api_search_endpoint', '');
         $api_key  = get_option('ba_api_key', '');
         $items    = self::search_items($term, $endpoint, $api_key);
 
@@ -226,16 +177,16 @@ class BA_Shortcode_Search {
 
         $rows = [];
         foreach ($items as $i => $item) {
-            $summary = BA_Device_Renderer::summarize_item($item, $i);
             $rows[] = [
-                'display_name'   => $summary['display_name'],
-                'main_id'        => $summary['main_id'],
-                'manufacturer'   => $summary['manufacturer'],
-                'version_model'  => $summary['version_model'],
-                'catalog_number' => $summary['catalog_number'],
-                'details_html'   => BA_Device_Renderer::get_details_html($item),
+                'deviceName'     => $item['deviceName']     ?? '',
+                'primaryId'      => $item['primaryId']      ?? '',
+                'manufacturer'   => $item['manufacturer']   ?? '',
+                'version'        => $item['version']        ?? '',
+                'catalogNumber'  => $item['catalogNumber']  ?? '',
+                'details_html'   => '<em>Detalles disponibles al ampliar…</em>',
             ];
         }
+
         wp_send_json(['data' => $rows]);
     }
 }

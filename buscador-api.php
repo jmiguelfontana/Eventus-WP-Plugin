@@ -2,32 +2,28 @@
 /*
 Plugin Name: Eventus API
 Description: Conecta con la API Eventus mediante API Key.
-Version: 1.0.1
+Version: 1.0.2
 Author: UDITrace
 */
 
 if (!defined('ABSPATH')) exit;
 
-// Cargar clases
-require_once plugin_dir_path(__FILE__) . 'includes/class-ba-device-renderer.php';
-require_once plugin_dir_path(__FILE__) . 'includes/class-ba-device-rowbuilder.php';
-require_once plugin_dir_path(__FILE__) . 'includes/class-ba-device-detailrenderer.php';
-require_once plugin_dir_path(__FILE__) . 'includes/class-ba-device-scripts.php';
-require_once plugin_dir_path(__FILE__) . 'includes/class-ba-device-table.php';
-
-// Cargar settings y shortcode
-//require_once plugin_dir_path(__FILE__) . 'includes/admin-settings.php';
+// Cargar clases necesarias
 require_once plugin_dir_path(__FILE__) . 'includes/class-ba-admin-settings.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-ba-shortcode-search.php';
 
 register_activation_hook(__FILE__, 'ba_eventusapi_activate');
 
+/**
+ * Valores por defecto al activar plugin
+ */
 function ba_eventusapi_activate() {
     $defaults = [
-        'ba_api_endpoint' => '',
-        'ba_api_key'      => '',
-        'ba_ssl_verify'   => 1,
-        'ba_http_timeout' => 15,
+        'ba_api_search_endpoint' => '', // 🔹 endpoint búsqueda
+        'ba_api_device_endpoint' => '', // 🔹 endpoint detalle por id
+        'ba_api_key'             => '',
+        'ba_ssl_verify'          => 1,
+        'ba_http_timeout'        => 15,
     ];
 
     foreach ($defaults as $option => $default) {
@@ -37,7 +33,11 @@ function ba_eventusapi_activate() {
     }
 }
 
+/**
+ * Cargar CSS y JS
+ */
 add_action('wp_enqueue_scripts', function () {
+    // CSS principal
     wp_enqueue_style(
         'buscador-api',
         plugins_url('assets/buscador-api.css', __FILE__),
@@ -45,31 +45,62 @@ add_action('wp_enqueue_scripts', function () {
         '1.4'
     );
 
-    wp_register_style('ba-datatables', 'https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css', [], '1.13.6');
-    wp_register_script('ba-datatables', 'https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js', ['jquery'], '1.13.6', true);
-    wp_register_script('ba-datatables-init', plugins_url('assets/buscador-api.js', __FILE__), ['jquery', 'ba-datatables'], '1.0.1', true);
+    // DataTables
+    wp_register_style(
+        'ba-datatables',
+        'https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css',
+        [],
+        '1.13.6'
+    );
+    wp_register_script(
+        'ba-datatables',
+        'https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js',
+        ['jquery'],
+        '1.13.6',
+        true
+    );
+
+    // Script de inicialización
+    wp_register_script(
+        'ba-datatables-init',
+        plugins_url('assets/buscador-api.js', __FILE__),
+        ['jquery', 'ba-datatables'],
+        '1.0.2',
+        true
+    );
+
+    // Pasar ajaxurl a JS
+    wp_localize_script('ba-datatables-init', 'baAjax', [
+        'url'   => admin_url('admin-ajax.php'),
+        'nonce' => wp_create_nonce('ba_datatables_search'),
+    ]);
 });
 
+/**
+ * Endpoint AJAX para DataTables
+ */
+add_action('wp_ajax_ba_datatables_search', 'ba_datatables_search');
+add_action('wp_ajax_nopriv_ba_datatables_search', 'ba_datatables_search');
 
-add_action('wp_ajax_ba_load_device_details', 'ba_load_device_details');
-add_action('wp_ajax_nopriv_ba_load_device_details', 'ba_load_device_details');
-function ba_load_device_details() {
-    $device_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-    if ($device_id <= 0) {
-        wp_send_json_error(__('ID no válido', 'eventusapi'));
+function ba_datatables_search() {
+    check_ajax_referer('ba_datatables_search', 'nonce');
+
+    $term = sanitize_text_field($_POST['term'] ?? '');
+    if ($term === '') {
+        wp_send_json(['data' => []]);
     }
 
-    $base_url  = rtrim(get_option('ba_api_device_endpoint', ''), '/');
+    $base_url  = rtrim(get_option('ba_api_search_endpoint', ''), '/');
     $api_key   = trim((string) get_option('ba_api_key', ''));
     $timeout   = (int) get_option('ba_http_timeout', 15);
     $sslverify = (bool) get_option('ba_ssl_verify', true);
 
     if (empty($base_url)) {
-        wp_send_json_error(__('El endpoint de la API no está configurado.', 'eventusapi'));
+        wp_send_json(['data' => [], 'error' => 'Endpoint no configurado']);
     }
 
-    // Construir URL final
-    $url = $base_url . '/' . $device_id;
+    // Construir URL
+    $url = str_replace('{ref}', rawurlencode($term), $base_url);
 
     $args = [
         'timeout'   => max(5, min(120, $timeout)),
@@ -81,21 +112,26 @@ function ba_load_device_details() {
     }
 
     $response = wp_remote_get($url, $args);
-
     if (is_wp_error($response)) {
-        wp_send_json_error(__('Error en API: ', 'eventusapi') . $response->get_error_message());
+        wp_send_json(['data' => [], 'error' => $response->get_error_message()]);
     }
 
     $data = json_decode(wp_remote_retrieve_body($response), true);
-    if (empty($data) || empty($data['data'])) {
-        wp_send_json_error(__('No se encontraron datos de detalle.', 'eventusapi'));
+
+    if (empty($data['data'])) {
+        wp_send_json(['data' => []]);
     }
 
-    // La API devuelve un único objeto en data
-    $device = $data['data'];
+    $rows = [];
+    foreach ($data['data'] as $item) {
+        $rows[] = [
+            'deviceName'    => $item['deviceName']    ?? '',
+            'primaryId'     => $item['primaryId']     ?? '',
+            'manufacturer'  => $item['manufacturer']  ?? '',
+            'version'       => $item['version']       ?? '',
+            'catalogNumber' => $item['catalogNumber'] ?? '',
+        ];
+    }
 
-    // Renderizar HTML usando el renderer centralizado
-    $html = BA_Device_DetailRenderer::capture_details($device);
-
-    wp_send_json_success(['html' => $html]);
+    wp_send_json(['data' => $rows]);
 }

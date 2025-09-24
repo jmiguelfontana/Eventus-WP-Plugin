@@ -14,7 +14,14 @@
   function createTableMarkup(container){
     var notice = $('<div class="ba-results-notice" aria-live="polite"></div>');
     var table = $('<table class="ba-devices-table display" style="width:100%"></table>');
-    var thead = $('<thead><tr><th></th><th>' + baDataTables.i18n.headers.name + '</th><th>' + baDataTables.i18n.headers.primaryId + '</th><th>' + baDataTables.i18n.headers.manufacturer + '</th><th>' + baDataTables.i18n.headers.version + '</th><th>' + baDataTables.i18n.headers.catalog + '</th></tr></thead>');
+    var thead = $('<thead><tr>'
+      + '<th></th>'
+      + '<th>' + baDataTables.i18n.headers.name + '</th>'
+      + '<th>' + baDataTables.i18n.headers.primaryId + '</th>'
+      + '<th>' + baDataTables.i18n.headers.manufacturer + '</th>'
+      + '<th>' + baDataTables.i18n.headers.version + '</th>'
+      + '<th>' + baDataTables.i18n.headers.catalog + '</th>'
+      + '</tr></thead>');
     table.append(thead).append('<tbody></tbody>');
     container.append(notice, table);
     return { notice: notice, table: table };
@@ -32,31 +39,26 @@
       btn.find(".ba-spinner").remove();
     }
   }
+
   function stripBom(text){
-    if(!text){
-      return '';
-    }
+    if(!text){ return ''; }
     return String(text).replace(/^\uFEFF/, '');
   }
 
   function formatUnexpectedMessage(prefix, responseText){
-    if(!responseText){
-      return prefix;
-    }
+    if(!responseText){ return prefix; }
     var trimmed = stripBom(responseText).replace(/^[\s\u200B]+|[\s\u200B]+$/g, '');
     if(trimmed.length > 180){
-      trimmed = trimmed.slice(0, 177) + 'Ã¢â‚¬Â¦';
+      trimmed = trimmed.slice(0, 177) + '…';
     }
     if(trimmed === '0'){
-      return prefix + ' (WordPress devolviÃƒÂ³ 0; acciÃƒÂ³n Ajax inexistente o sin cargar)';
+      return prefix + ' (WordPress devolvió 0; acción Ajax inexistente o sin cargar)';
     }
     return prefix + ' -> ' + trimmed;
   }
 
   function normaliseRows(json){
-    if(!json){
-      return [];
-    }
+    if(!json){ return []; }
     var data = json.data;
     if(typeof data === 'string'){
       try {
@@ -70,8 +72,7 @@
       return data;
     }
     if(data && typeof data === 'object'){
-      var maybeArray = Object.keys(data).map(function(key){ return data[key]; });
-      return maybeArray;
+      return Object.keys(data).map(function(key){ return data[key]; });
     }
     return [];
   }
@@ -99,11 +100,11 @@
       order: [[1, 'asc']],
       columns: [
         { data: null, orderable: false, className: 'dt-control', defaultContent: '', width: '28px' },
-        { data: 'display_name', defaultContent: '' },
-        { data: 'main_id', defaultContent: '' },
+        { data: 'deviceName', defaultContent: '' },
+        { data: 'primaryId', defaultContent: '' },
         { data: 'manufacturer', defaultContent: '' },
-        { data: 'version_model', defaultContent: '' },
-        { data: 'catalog_number', defaultContent: '' }
+        { data: 'version', defaultContent: '' },
+        { data: 'catalogNumber', defaultContent: '' }
       ],
       initComplete: function(){
         var api = this.api();
@@ -134,20 +135,6 @@
       }
     });
 
-    tableEl.on('click', 'td.dt-control', function(){
-      var tr = $(this).closest('tr');
-      var row = dataTable.row(tr);
-      if(row.child.isShown()){
-        row.child.hide();
-        tr.removeClass('is-expanded');
-      } else {
-        var data = row.data() || {};
-        var html = data.details_html ? data.details_html : '<em>' + baDataTables.i18n.noDetails + '</em>';
-        row.child('<div class="ba-dt-details">' + html + '</div>').show();
-        tr.addClass('is-expanded');
-      }
-    });
-
     function fetchData(){
       notice.empty();
 
@@ -173,7 +160,7 @@
         try {
           json = cleanText ? JSON.parse(cleanText) : null;
         } catch(parseError){
-          console.error('Respuesta Ajax no es JSON vÃƒÂ¡lido', parseError, responseText);
+          console.error('Respuesta Ajax no es JSON válido', parseError, responseText);
           dataTable.clear().draw();
           notice.html('<div class="notice notice-error"><p>' + formatUnexpectedMessage(baDataTables.i18n.unexpected, responseText) + '</p></div>');
           return;
@@ -219,7 +206,3 @@
     });
   });
 })(jQuery);
-
-
-
-
