@@ -33,7 +33,7 @@ class BA_Device_Table {
      * @param array $row Fila preparada por BA_Device_RowBuilder.
      */
     public static function render_summary_row(array $row) {
-        echo '<tr class="ba-device-row">';
+        echo '<tr class="ba-device-row" data-device-id="' . esc_attr($row['id']) . '">';
         echo '<td><strong>' . esc_html($row['display_name']) . '</strong></td>';
         echo '<td>' . esc_html($row['main_id']) . '</td>';
         echo '<td>' . esc_html($row['manufacturer']) . '</td>';
@@ -44,15 +44,14 @@ class BA_Device_Table {
     }
 
     /**
-     * Renderiza la fila de detalle (oculta por defecto).
+     * Renderiza la fila de detalle (vacía al inicio).
+     * Se rellenará con AJAX al expandir la fila.
      *
-     * @param array  $item     Datos completos del dispositivo.
      * @param string $toggleId ID del detalle asociado a la fila.
      */
-    public static function render_detail_row(array $item, $toggleId) {
-        $detailsHtml = BA_Device_DetailRenderer::capture_details($item);
+    public static function render_detail_row($toggleId) {
         echo '<tr id="' . esc_attr($toggleId) . '" class="ba-device-details" style="display:none;">';
-        echo '<td colspan="6">' . ($detailsHtml !== '' ? $detailsHtml : '<em>Sin detalles adicionales.</em>') . '</td>';
+        echo '<td colspan="6"><em>Seleccione para cargar detalles...</em></td>';
         echo '</tr>';
     }
 }

@@ -22,21 +22,47 @@ class BA_Admin_Settings {
         // Sección principal
         add_settings_section('ba_section_main', __('Configuración', 'eventusapi'), '__return_false', 'ba-settings');
 
-        // Endpoint
-        register_setting('ba_options_group', 'ba_api_endpoint', [
+        // Endpoint búsqueda por ref
+        register_setting('ba_options_group', 'ba_api_search_endpoint', [
             'type'              => 'string',
             'sanitize_callback' => [$this, 'sanitize_required_url'],
             'default'           => '',
         ]);
-        add_settings_field('ba_api_endpoint', __('Endpoint de la API', 'eventusapi'), [$this, 'field_endpoint'], 'ba-settings', 'ba_section_main');
+        add_settings_field(
+            'ba_api_search_endpoint',
+            __('Endpoint de la API (búsqueda)', 'eventusapi'),
+            [$this, 'field_search_endpoint'],
+            'ba-settings',
+            'ba_section_main'
+        );
 
-        // API Key
+        // Endpoint por ID
+        register_setting('ba_options_group', 'ba_api_device_endpoint', [
+            'type'              => 'string',
+            'sanitize_callback' => [$this, 'sanitize_required_url'],
+            'default'           => '',
+        ]);
+        add_settings_field(
+            'ba_api_device_endpoint',
+            __('Endpoint de la API (detalle por ID)', 'eventusapi'),
+            [$this, 'field_device_endpoint'],
+            'ba-settings',
+            'ba_section_main'
+        );
+
+        // API Key (opcional)
         register_setting('ba_options_group', 'ba_api_key', [
             'type'              => 'string',
             'sanitize_callback' => [$this, 'sanitize_required_text'],
             'default'           => '',
         ]);
-        add_settings_field('ba_api_key', __('API Key', 'eventusapi'), [$this, 'field_apikey'], 'ba-settings', 'ba_section_main');
+        add_settings_field(
+            'ba_api_key',
+            __('API Key', 'eventusapi'),
+            [$this, 'field_apikey'],
+            'ba-settings',
+            'ba_section_main'
+        );
 
         // Timeout
         register_setting('ba_options_group', 'ba_http_timeout', [
@@ -44,7 +70,13 @@ class BA_Admin_Settings {
             'sanitize_callback' => [$this, 'sanitize_timeout'],
             'default'           => 15,
         ]);
-        add_settings_field('ba_http_timeout', __('Timeout (segundos)', 'eventusapi'), [$this, 'field_http_timeout'], 'ba-settings', 'ba_section_main');
+        add_settings_field(
+            'ba_http_timeout',
+            __('Timeout (segundos)', 'eventusapi'),
+            [$this, 'field_http_timeout'],
+            'ba-settings',
+            'ba_section_main'
+        );
 
         // SSL verify
         register_setting('ba_options_group', 'ba_ssl_verify', [
@@ -52,17 +84,32 @@ class BA_Admin_Settings {
             'sanitize_callback' => 'rest_sanitize_boolean',
             'default'           => 1,
         ]);
-        add_settings_field('ba_ssl_verify', __('Verificar SSL', 'eventusapi'), [$this, 'field_sslverify'], 'ba-settings', 'ba_section_main');
+        add_settings_field(
+            'ba_ssl_verify',
+            __('Verificar SSL', 'eventusapi'),
+            [$this, 'field_sslverify'],
+            'ba-settings',
+            'ba_section_main'
+        );
     }
 
     /** ====== Render de los campos ====== */
-    public function field_endpoint() {
-        $endpoint = get_option('ba_api_endpoint', '');
+    public function field_search_endpoint() {
+        $endpoint = get_option('ba_api_search_endpoint', '');
         printf(
-            '<input type="text" name="ba_api_endpoint" value="%s" class="regular-text code" size="60" required />',
+            '<input type="text" name="ba_api_search_endpoint" value="%s" class="regular-text code" size="60" required />',
             esc_attr($endpoint)
         );
-        echo '<p class="description">' . esc_html__('Ejemplo:', 'eventusapi') . ' <code>https://api.ejemplo.com/search?ref={ref}</code></p>';
+        echo '<p class="description">' . esc_html__('Ejemplo:', 'eventusapi') . ' <code>https://miapi.local/api/v1/devices/search?ref={ref}</code></p>';
+    }
+
+    public function field_device_endpoint() {
+        $endpoint = get_option('ba_api_device_endpoint', '');
+        printf(
+            '<input type="text" name="ba_api_device_endpoint" value="%s" class="regular-text code" size="60" required />',
+            esc_attr($endpoint)
+        );
+        echo '<p class="description">' . esc_html__('Ejemplo:', 'eventusapi') . ' <code>https://miapi.local/api/v1/devices/{id}</code></p>';
     }
 
     public function field_apikey() {
@@ -128,19 +175,19 @@ class BA_Admin_Settings {
     public function sanitize_required_url($value) {
         $value = trim((string) $value);
         if ($value === '') {
-            add_settings_error('ba_api_endpoint', 'ba_required_endpoint', __('El campo "Endpoint de la API" es obligatorio.', 'eventusapi'));
-            return get_option('ba_api_endpoint', '');
+            add_settings_error(
+                current_filter(),
+                'ba_required_endpoint',
+                __('El campo de Endpoint es obligatorio.', 'eventusapi')
+            );
+            return '';
         }
         return esc_url_raw($value);
     }
 
     public function sanitize_required_text($value) {
         $value = trim((string) $value);
-        if ($value === '') {
-            add_settings_error('ba_api_key', 'ba_required_apikey', __('El campo "API Key" es obligatorio.', 'eventusapi'));
-            return get_option('ba_api_key', '');
-        }
-        return sanitize_text_field($value);
+        return sanitize_text_field($value); // opcional
     }
 
     public function sanitize_timeout($value) {

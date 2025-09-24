@@ -167,6 +167,14 @@
   color: #3c434a;
 }
 
+.ba-dt-details tbody tr {
+  background-color: #fff;
+}
+
+.ba-dt-details tbody tr > th{
+  text-align: left;
+}
+
 /* ==========================
    Tablas de dispositivos BA
    ========================== */

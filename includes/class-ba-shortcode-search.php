@@ -11,7 +11,7 @@ class BA_Shortcode_Search {
 
     /** ===== Shortcode ===== */
     public function shortcode_entry() {
-        $endpoint = get_option('ba_api_endpoint', '');
+        $endpoint = get_option('ba_api_search_endpoint', '');
         $api_key  = get_option('ba_api_key', '');
 
         ob_start();
@@ -216,7 +216,7 @@ class BA_Shortcode_Search {
             wp_send_json(['data' => [], 'error' => __('Introduce un término de búsqueda.', 'eventusapi')]);
         }
 
-        $endpoint = get_option('ba_api_endpoint', '');
+        $endpoint = get_option('ba_api_search_endpoint', ''); // 👈 ahora endpoint de búsqueda
         $api_key  = get_option('ba_api_key', '');
         $items    = self::search_items($term, $endpoint, $api_key);
 
@@ -242,4 +242,3 @@ class BA_Shortcode_Search {
 
 // Inicializar
 new BA_Shortcode_Search();
-
