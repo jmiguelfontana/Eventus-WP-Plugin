@@ -7,6 +7,19 @@
 
     var input   = form.find('input[name="termino_busqueda"]');
     var searchBtn = form.find('button[name="buscar_api"]');
+    var spinnerMarkup = '<span class="ba-spinner" aria-hidden="true"></span>';
+
+    function setLoading(isLoading){
+      if(isLoading){
+        searchBtn.prop('disabled', true).addClass('is-busy').attr('aria-busy', 'true');
+        if(!searchBtn.find('.ba-spinner').length){
+          searchBtn.append(spinnerMarkup);
+        }
+      } else {
+        searchBtn.prop('disabled', false).removeClass('is-busy').removeAttr('aria-busy');
+        searchBtn.find('.ba-spinner').remove();
+      }
+    }
 
     // Añadimos el botón Reset
     var resetBtn = $('<button type="button" class="button">Reset</button>');
@@ -107,16 +120,27 @@
       notice.empty();
 
       if(term === ''){
+        setLoading(false);
         dataTable.clear().draw();
         notice.html('<div class="notice notice-warning"><p>'+ baDataTables.i18n.emptyTerm +'</p></div>');
         return;
       }
 
-      $.post(baDataTables.ajax_url, {
-        action: 'ba_datatables_search',
-        nonce: baDataTables.nonce,
-        term: term
-      }, function(json){
+      setLoading(true);
+
+      var request = $.ajax({
+        url: baDataTables.ajax_url,
+        method: 'POST',
+        dataType: 'json',
+        data: {
+          action: 'ba_datatables_search',
+          nonce: baDataTables.nonce,
+          term: term
+        }
+      });
+
+      request.done(function(json){
+        notice.empty();
         if(json && json.error){
           dataTable.clear().draw();
           notice.html('<div class="notice notice-error"><p>'+ json.error +'</p></div>');
@@ -124,11 +148,17 @@
         }
         if(json && Array.isArray(json.data)){
           dataTable.clear().rows.add(json.data).draw();
-          if(json.data.length === 0){
-            notice.html('<div class="notice notice-info"><p>'+ baDataTables.i18n.noResults +'</p></div>');
-          }
         }
-      }, 'json');
+      });
+
+      request.fail(function(){
+        dataTable.clear().draw();
+        notice.html('<div class="notice notice-error"><p>Se produjo un error al realizar la busqueda. Intentalo de nuevo.</p></div>');
+      });
+
+      request.always(function(){
+        setLoading(false);
+      });
     }
 
     // Buscar
@@ -140,6 +170,7 @@
 
     // Reset
     resetBtn.on('click', function(){
+      setLoading(false);
       input.val('');
       dataTable.clear().draw();
       notice.empty();
