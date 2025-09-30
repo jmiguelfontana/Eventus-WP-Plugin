@@ -8,6 +8,7 @@
     var input      = form.find('input[name="termino_busqueda"]');
     var searchBtn  = form.find('button[name="buscar_api"]');
     var resetBtn   = $('#evt_btnReset');
+    var helpBtn   = $('#evt_btnHelp');
     var spinnerMarkup = '<span class="ba-spinner" aria-hidden="true"></span>';
     var buttonLabels  = (baDataTables.i18n && baDataTables.i18n.buttons) || {};
     var excelFilename = buttonLabels.excelFilename || 'eventus-resultados';
@@ -18,11 +19,15 @@
     function setLoading(isLoading){
       if(isLoading){
         searchBtn.prop('disabled', true).addClass('is-busy').attr('aria-busy', 'true');
+        resetBtn.prop('disabled', true).addClass('is-busy').attr('aria-busy', 'true');
+        helpBtn.prop('disabled', true).addClass('is-busy').attr('aria-busy', 'true');
         if(!searchBtn.find('.ba-spinner').length){
           searchBtn.append(spinnerMarkup);
         }
       } else {
         searchBtn.prop('disabled', false).removeClass('is-busy').removeAttr('aria-busy');
+        resetBtn.prop('disabled', true).removeClass('is-busy').removeAttr('aria-busy');
+        helpBtn.prop('disabled', true).removeClass('is-busy').removeAttr('aria-busy');
         searchBtn.find('.ba-spinner').remove();
       }
     }
