@@ -28,7 +28,9 @@ class BA_Shortcode_Search {
     private function render_form() {
         static $localized = false;
 
+        wp_enqueue_style('ba-fontawesome');
         wp_enqueue_style('ba-datatables');
+        wp_enqueue_style('ba-datatables-buttons');
         wp_enqueue_script('ba-datatables');
         wp_enqueue_script('ba-datatables-init');
 
@@ -44,7 +46,7 @@ class BA_Shortcode_Search {
                 'search'       => __('Buscar:', 'eventusapi'),
                 'paginate'     => [
                     'first'    => __('Primero', 'eventusapi'),
-                    'last'     => __('Último', 'eventusapi'),
+                    'last'     => __('Ãšltimo', 'eventusapi'),
                     'next'     => __('Siguiente', 'eventusapi'),
                     'previous' => __('Anterior', 'eventusapi'),
                 ],
@@ -52,15 +54,20 @@ class BA_Shortcode_Search {
             $i18n = [
                 'noResults' => __('Sin resultado.', 'eventusapi'),
                 'unexpected' => __('Se produjo un error inesperado.', 'eventusapi'),
-                'emptyTerm' => __('Introduce un término de búsqueda.', 'eventusapi'),
+                'emptyTerm' => __('Introduce un tÃ©rmino de bÃºsqueda.', 'eventusapi'),
                 'noDetails' => __('Sin detalles disponibles.', 'eventusapi'),
                 'headers' => [
                     'id'          => __('ID', 'eventusapi'),
                     'name'        => __('Nombre del dispositivo', 'eventusapi'),
                     'primaryId'   => __('Primary ID', 'eventusapi'),
                     'manufacturer'=> __('Fabricante', 'eventusapi'),
-                    'version'     => __('Versión/Modelo', 'eventusapi'),
+                    'version'     => __('VersiÃ³n/Modelo', 'eventusapi'),
                     'catalog'     => __('Catalog Number', 'eventusapi'),
+                ],
+                'buttons' => [
+                    'excel'         => __('Exportar a Excel', 'eventusapi'),
+                    'excelTitle'    => __('Resultados de la busqueda', 'eventusapi'),
+                    'excelFilename' => sanitize_title(__('Resultados de la busqueda', 'eventusapi')),
                 ],
             ];
             wp_localize_script('ba-datatables-init', 'baDataTables', [
@@ -76,10 +83,30 @@ class BA_Shortcode_Search {
         <form class="buscador-api wp-block-group" method="post" novalidate>
             <?php wp_nonce_field('ba_buscar', 'ba_nonce'); ?>
             <div class="wp-block-group__inner-container">
-                <label for="ba-term" class="screen-reader-text"><?php esc_html_e('Término de búsqueda', 'eventusapi'); ?></label>
+                <label for="ba-term" class="screen-reader-text"><?php esc_html_e('TÃ©rmino de bÃºsqueda', 'eventusapi'); ?></label>
                 <input id="ba-term" class="wp-block-search__input" type="text" name="termino_busqueda"
                        placeholder="Primary DI, Version, Model, Catalog Number..." required />
-                <button type="submit" name="buscar_api" class="button button-primary"><?php esc_html_e('Buscar', 'eventusapi'); ?></button>
+                <div class="evt-toolbox">
+                    <button type="submit" name="buscar_api" class="button button-primary"
+                            title="<?php esc_attr_e('Buscar', 'eventusapi'); ?>"
+                            aria-label="<?php esc_attr_e('Buscar', 'eventusapi'); ?>">
+                        <span class="screen-reader-text"><?php esc_html_e('Buscar', 'eventusapi'); ?></span>
+                        <span class="ba-btn-icon fa-solid fa-magnifying-glass" aria-hidden="true"></span>
+                    </button>
+                    <button id="evt_btnReset" type="button" class="button"
+                            title="<?php esc_attr_e('Borrar', 'eventusapi'); ?>"
+                            aria-label="<?php esc_attr_e('Borrar', 'eventusapi'); ?>">
+                        <span class="screen-reader-text"><?php esc_html_e('Borrar', 'eventusapi'); ?></span>
+                        <span class="ba-btn-icon fa-solid fa-eraser" aria-hidden="true"></span>
+                    </button>
+                    <a href="<?php echo esc_url( get_permalink( get_page_by_path( 'buscador/ayuda' ) ) ); ?>"
+                       class="button"
+                       title="<?php esc_attr_e('Ayuda', 'eventusapi'); ?>"
+                       aria-label="<?php esc_attr_e('Ayuda', 'eventusapi'); ?>">
+                        <span class="screen-reader-text"><?php esc_html_e('Ayuda', 'eventusapi'); ?></span>
+                        <span class="ba-btn-icon fa-solid fa-circle-info" aria-hidden="true"></span>
+                    </a>
+                </div>
             </div>
         </form>
         <?php
@@ -97,7 +124,7 @@ class BA_Shortcode_Search {
         echo '</div>';
     }
 
-    /** ===== Lógica de búsqueda ===== */
+    /** ===== LÃ³gica de bÃºsqueda ===== */
     public static function search_items($term, $endpoint, $api_key) {
         if ($term === '') {
             return [];
@@ -162,7 +189,7 @@ class BA_Shortcode_Search {
 
         $term = sanitize_text_field(wp_unslash($_POST['term'] ?? ''));
         if ($term === '') {
-            wp_send_json(['data' => [], 'error' => __('Introduce un término de búsqueda.', 'eventusapi')]);
+            wp_send_json(['data' => [], 'error' => __('Introduce un tÃ©rmino de bÃºsqueda.', 'eventusapi')]);
         }
 
         $endpoint = get_option('ba_api_search_endpoint', '');

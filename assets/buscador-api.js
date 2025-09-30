@@ -5,9 +5,15 @@
     var form = $('form.buscador-api');
     if(!form.length){ return; }
 
-    var input   = form.find('input[name="termino_busqueda"]');
-    var searchBtn = form.find('button[name="buscar_api"]');
+    var input      = form.find('input[name="termino_busqueda"]');
+    var searchBtn  = form.find('button[name="buscar_api"]');
+    var resetBtn   = $('#evt_btnReset');
     var spinnerMarkup = '<span class="ba-spinner" aria-hidden="true"></span>';
+    var buttonLabels  = (baDataTables.i18n && baDataTables.i18n.buttons) || {};
+    var excelFilename = buttonLabels.excelFilename || 'eventus-resultados';
+    var excelTitle    = buttonLabels.excelTitle || 'Resultados de la busqueda';
+    var excelText     = buttonLabels.excel || 'Exportar a Excel';
+    var excelButtonHtml = '<span class="fa-solid fa-file-excel" aria-hidden="true"></span><span class="screen-reader-text">' + excelText + '</span>';
 
     function setLoading(isLoading){
       if(isLoading){
@@ -21,11 +27,6 @@
       }
     }
 
-    // Añadimos el botón Reset
-    var resetBtn = $('<button type="button" class="button">Reset</button>');
-    searchBtn.after(resetBtn);
-
-    // Contenedor resultados
     var container = $('<div class="ba-resultados ba-resultados--datatables"></div>');
     form.after(container);
 
@@ -45,13 +46,26 @@
     container.append(notice, tableEl);
 
     var dataTable = tableEl.DataTable({
-      dom: 'lrtip',
+      dom: "<'ba-table-controls'lB>rtip",
+      buttons: [
+        {
+          extend: 'excelHtml5',
+          className: 'button button-secondary ba-export-excel',
+          text: excelButtonHtml,
+          titleAttr: excelText,
+          filename: excelFilename,
+          title: excelTitle,
+          exportOptions: {
+            columns: [1, 2, 3, 4, 5]
+          }
+        }
+      ],
       autoWidth: false,
       searching: true,
       data: [],
       language: baDataTables.language || {},
       order: [[1, 'asc']],
-      columns: [        
+      columns: [
         { data: 'id', defaultContent: '', visible: false, searchable: false, orderable: false },
         { data: 'deviceName', defaultContent: '', visible: true, searchable: true, orderable: true },
         { data: 'primaryId', defaultContent: '', visible: true, searchable: true, orderable: true },
@@ -62,10 +76,10 @@
           data: null,
           orderable: false,
           searchable: false,
-          className: "dt-actions",
-          title: "Acciones",
+          className: 'dt-actions',
+          title: 'Acciones',
           render: function(data, type, row){
-            return '<button class="button ba-row-action" data-id="'+ row.id +'">Ver</button>';
+            return '<button class="button ba-row-action" data-id="'+ (row.id || '') +'">Ver</button>';
           }
         }
       ],
@@ -93,14 +107,14 @@
           }
 
           if (isSearchable) {
-            var $input = $('<input type="text" class="ba-col-filter" placeholder="' + headerText + '" />');
-            $input.on('keyup change', function(){
+            var $inputFilter = $('<input type="text" class="ba-col-filter" placeholder="' + headerText + '" />');
+            $inputFilter.on('keyup change', function(){
               var val = $.trim(this.value);
               if (column.search() !== val) {
                 column.search(val, false, false).draw();
               }
             });
-            $cell.append($input);
+            $cell.append($inputFilter);
           } else {
             $cell.append('&nbsp;');
           }
@@ -109,11 +123,6 @@
         });
         $header.append($filtersRow);
       }
-    });
-
-    tableEl.on('click', '.ba-row-action', function(){
-      var id = $(this).data('id');
-      alert("Has hecho click en el botón de la fila con ID: " + id);
     });
 
     function fetchData(term){
@@ -161,23 +170,22 @@
       });
     }
 
-    // Buscar
     form.on('submit', function(evt){
       evt.preventDefault();
       var term = $.trim(input.val() || '');
       fetchData(term);
     });
 
-    // Reset
-    resetBtn.on('click', function(){
-      setLoading(false);
-      input.val('');
-      dataTable.clear().draw();
-      notice.empty();
+    if(resetBtn.length){
+      resetBtn.on('click', function(){
+        setLoading(false);
+        input.val('');
+        dataTable.clear().draw();
+        notice.empty();
 
-      // limpiar filtros de columna también
-      tableEl.find('input.ba-col-filter').val('');
-      dataTable.columns().search('').draw();
-    });
+        tableEl.find('input.ba-col-filter').val('');
+        dataTable.columns().search('').draw();
+      });
+    }
   });
 })(jQuery);

@@ -237,3 +237,106 @@
 .buscador-api .button.is-busy .ba-spinner {
   margin-left:0;
 }
+
+/* === Buscador API overrides === */
+.buscador-api .wp-block-search__input {
+  padding: .3rem .75rem;
+}
+
+.screen-reader-text {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.buscador-api .evt-toolbox {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.buscador-api .evt-toolbox .button {
+  border-radius: 0;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  justify-content: center;
+  gap: 0;
+}
+
+.buscador-api .evt-toolbox .button:first-child { border-radius: 4px 0 0 4px; }
+.buscador-api .evt-toolbox .button:last-child { border-radius: 0 4px 4px 0; }
+
+.buscador-api .evt-toolbox .button .ba-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  font-size: 17px;
+  line-height: 1;
+}
+
+.ba-resultados--datatables .ba-table-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.ba-resultados--datatables .ba-table-controls .dt-buttons {
+  display: inline-flex;
+  gap: 0.5rem;
+}
+
+.ba-resultados--datatables .ba-table-controls .dataTables_length {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ba-resultados--datatables .dt-buttons .ba-export-excel {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #217346;
+  border-color: #1b5e3c;
+  color: #fff !important;
+  padding: 0.35rem 0.6rem;
+}
+
+.ba-resultados--datatables .dt-buttons .ba-export-excel .fa-file-excel {
+  font-size: 18px;
+  color: #fff;
+}
+
+.ba-resultados--datatables .dt-buttons .ba-export-excel:hover,
+.ba-resultados--datatables .dt-buttons .ba-export-excel:focus,
+.ba-resultados--datatables .dt-buttons .ba-export-excel:active {
+  background: #1e6a3f;
+  border-color: #185835;
+  color: #fff !important;
+}
+
+.ba-resultados--datatables .dt-buttons .ba-export-excel.disabled,
+.ba-resultados--datatables .dt-buttons .ba-export-excel:disabled {
+  background: #9fb9ab;
+  border-color: #7d9b8d;
+  color: rgba(255, 255, 255, 0.8) !important;
+  cursor: default;
+  pointer-events: none;
+}
+
+.ba-resultados--datatables .dt-buttons .ba-export-excel.disabled .fa-file-excel,
+.ba-resultados--datatables .dt-buttons .ba-export-excel:disabled .fa-file-excel {
+  color: rgba(255, 255, 255, 0.8);
+}

@@ -2,7 +2,7 @@
 /*
 Plugin Name: Eventus API
 Description: Conecta con la API Eventus mediante API Key.
-Version: 1.0.2
+Version: 1.0.3
 Author: UDITrace
 */
 
@@ -47,10 +47,22 @@ add_action('wp_enqueue_scripts', function () {
 
     // DataTables
     wp_register_style(
+        'ba-fontawesome',
+        'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css',
+        [],
+        '6.5.2'
+    );
+    wp_register_style(
         'ba-datatables',
         'https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css',
-        [],
+        ['ba-fontawesome'],
         '1.13.6'
+    );
+    wp_register_style(
+        'ba-datatables-buttons',
+        'https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css',
+        ['ba-datatables'],
+        '2.4.1'
     );
     wp_register_script(
         'ba-datatables',
@@ -59,13 +71,34 @@ add_action('wp_enqueue_scripts', function () {
         '1.13.6',
         true
     );
+    wp_register_script(
+        'ba-jszip',
+        'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',
+        [],
+        '3.10.1',
+        true
+    );
+    wp_register_script(
+        'ba-datatables-buttons',
+        'https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js',
+        ['ba-datatables'],
+        '2.4.1',
+        true
+    );
+    wp_register_script(
+        'ba-datatables-buttons-html5',
+        'https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js',
+        ['ba-jszip', 'ba-datatables-buttons'],
+        '2.4.1',
+        true
+    );
 
-    // Script de inicializaciÃ³n
+    // Script de inicialización
     wp_register_script(
         'ba-datatables-init',
         plugins_url('assets/buscador-api.js', __FILE__),
-        ['jquery', 'ba-datatables'],
-        '1.0.2',
+        ['jquery', 'ba-datatables-buttons-html5'],
+        '1.0.3',
         true
     );
 
@@ -135,3 +168,4 @@ function ba_datatables_search() {
 
     wp_send_json(['data' => $rows]);
 }
+
