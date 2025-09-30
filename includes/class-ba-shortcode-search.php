@@ -46,7 +46,7 @@ class BA_Shortcode_Search {
                 'search'       => __('Buscar:', 'eventusapi'),
                 'paginate'     => [
                     'first'    => __('Primero', 'eventusapi'),
-                    'last'     => __('Ãšltimo', 'eventusapi'),
+                    'last'     => __('Último', 'eventusapi'),
                     'next'     => __('Siguiente', 'eventusapi'),
                     'previous' => __('Anterior', 'eventusapi'),
                 ],
@@ -61,7 +61,7 @@ class BA_Shortcode_Search {
                     'name'        => __('Nombre del dispositivo', 'eventusapi'),
                     'primaryId'   => __('Primary ID', 'eventusapi'),
                     'manufacturer'=> __('Fabricante', 'eventusapi'),
-                    'version'     => __('VersiÃ³n/Modelo', 'eventusapi'),
+                    'version'     => __('Versión/Modelo', 'eventusapi'),
                     'catalog'     => __('Catalog Number', 'eventusapi'),
                 ],
                 'buttons' => [
