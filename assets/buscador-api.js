@@ -22,6 +22,7 @@
         resetBtn.prop('disabled', true).addClass('is-busy').attr('aria-busy', 'true');
         helpBtn.prop('disabled', true).addClass('is-busy').attr('aria-busy', 'true');
         if(!searchBtn.find('.ba-spinner').length){
+          searchBtn.find('.ba-btn-icon').hide();
           searchBtn.append(spinnerMarkup);
         }
       } else {
@@ -29,6 +30,7 @@
         resetBtn.prop('disabled', true).removeClass('is-busy').removeAttr('aria-busy');
         helpBtn.prop('disabled', true).removeClass('is-busy').removeAttr('aria-busy');
         searchBtn.find('.ba-spinner').remove();
+        searchBtn.find('.ba-btn-icon').show();
       }
     }
 
