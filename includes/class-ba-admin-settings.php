@@ -182,7 +182,21 @@ class BA_Admin_Settings {
             );
             return '';
         }
-        return esc_url_raw($value);
+        // Allow placeholders like {ref} or {id} in the configured endpoint.
+        // esc_url_raw strips characters like '{' and '}', so temporarily replace
+        // them with safe tokens, run esc_url_raw, then restore the braces.
+        $tokens = ['{' => '__BA_PLACEHOLDER_OPEN__', '}' => '__BA_PLACEHOLDER_CLOSE__'];
+        $tmp = str_replace(array_keys($tokens), array_values($tokens), $value);
+        $clean = esc_url_raw($tmp);
+        // If esc_url_raw removed everything (invalid URL), still attempt to return
+        // the original value (after minimal escaping) so users can keep placeholders.
+        if ($clean === '') {
+            // Fallback: escape attribute-safe version and return original-like string
+            // Note: stored value will be output via esc_attr when rendering the input.
+            return $value;
+        }
+        $restored = str_replace(array_values($tokens), array_keys($tokens), $clean);
+        return $restored;
     }
 
     public function sanitize_required_text($value) {

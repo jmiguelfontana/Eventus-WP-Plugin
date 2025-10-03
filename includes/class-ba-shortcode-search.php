@@ -4,7 +4,7 @@ if (!defined('ABSPATH')) exit;
 class BA_Shortcode_Search {
 
     public function __construct() {
-        add_shortcode('buscador_api', [$this, 'shortcode_entry']);
+        add_shortcode('eventus_search', [$this, 'shortcode_entry']);
         add_action('wp_ajax_ba_datatables_search', [$this, 'ajax_search']);
         add_action('wp_ajax_nopriv_ba_datatables_search', [$this, 'ajax_search']);
     }
@@ -17,10 +17,10 @@ class BA_Shortcode_Search {
         ob_start();
         $this->render_form();
 
-        if (isset($_POST['ba_nonce']) && wp_verify_nonce($_POST['ba_nonce'], 'ba_buscar')) {
+       /*if (isset($_POST['ba_nonce']) && wp_verify_nonce($_POST['ba_nonce'], 'ba_buscar')) {
             $term = sanitize_text_field(wp_unslash($_POST['termino_busqueda'] ?? ''));
             $this->render_results($term, $endpoint, $api_key);
-        }
+        }*/
 
         return ob_get_clean();
     }
@@ -54,7 +54,7 @@ class BA_Shortcode_Search {
             $i18n = [
                 'noResults' => __('Sin resultado.', 'eventusapi'),
                 'unexpected' => __('Se produjo un error inesperado.', 'eventusapi'),
-                'emptyTerm' => __('Introduce un tÃ©rmino de bÃºsqueda.', 'eventusapi'),
+                'emptyTerm' => __('Introduce un término de búsqueda.', 'eventusapi'),
                 'noDetails' => __('Sin detalles disponibles.', 'eventusapi'),
                 'headers' => [
                     'id'          => __('ID', 'eventusapi'),
@@ -80,12 +80,12 @@ class BA_Shortcode_Search {
         }
 
         ?>
-        <form class="buscador-api wp-block-group" method="post" novalidate>
+        <form class="eventus-search wp-block-group" method="post" novalidate>
             <?php wp_nonce_field('ba_buscar', 'ba_nonce'); ?>
             <div class="wp-block-group__inner-container">
-                <label for="ba-term" class="screen-reader-text"><?php esc_html_e('TÃ©rmino de bÃºsqueda', 'eventusapi'); ?></label>
+                <label for="ba-term" class="screen-reader-text"><?php esc_html_e('Término de búsqueda', 'eventusapi'); ?></label>
                 <input id="ba-term" class="wp-block-search__input" type="text" name="termino_busqueda"
-                       placeholder="Primary DI, Version, Model, Catalog Number..." required />
+                       placeholder="Nombre, Fabricante, GTIN, Version/Model, Catalog Number..." required />
                 <div class="evt-toolbox">
                     <button type="submit" name="buscar_api" class="button button-primary"
                             title="<?php esc_attr_e('Buscar', 'eventusapi'); ?>"
@@ -99,7 +99,7 @@ class BA_Shortcode_Search {
                         <span class="screen-reader-text"><?php esc_html_e('Borrar', 'eventusapi'); ?></span>
                         <span class="ba-btn-icon fa-solid fa-eraser" aria-hidden="true"></span>
                     </button>
-                    <a href="<?php echo esc_url( get_permalink( get_page_by_path( 'buscador/ayuda' ) ) ); ?>"
+                    <a href="<?php echo esc_url( get_permalink( get_page_by_path( '/buscador/ayuda' ) ) ); ?>"
                        class="button"
                        title="<?php esc_attr_e('Ayuda', 'eventusapi'); ?>"
                        aria-label="<?php esc_attr_e('Ayuda', 'eventusapi'); ?>">
@@ -112,7 +112,7 @@ class BA_Shortcode_Search {
         <?php
     }
 
-    private function render_results($term, $endpoint, $api_key) {
+    /*private function render_results($term, $endpoint, $api_key) {
         $items = self::search_items($term, $endpoint, $api_key);
 
         echo '<div class="ba-resultados" style="margin-top:1rem;">';
@@ -122,7 +122,7 @@ class BA_Shortcode_Search {
             echo '<div class="notice notice-warning"><p>' . esc_html__('Sin resultado.', 'eventusapi') . '</p></div>';
         }
         echo '</div>';
-    }
+    }*/
 
     /** ===== LÃ³gica de bÃºsqueda ===== */
     public static function search_items($term, $endpoint, $api_key) {
@@ -189,7 +189,7 @@ class BA_Shortcode_Search {
 
         $term = sanitize_text_field(wp_unslash($_POST['term'] ?? ''));
         if ($term === '') {
-            wp_send_json(['data' => [], 'error' => __('Introduce un tÃ©rmino de bÃºsqueda.', 'eventusapi')]);
+            wp_send_json(['data' => [], 'error' => __('Introduce un término de búsqueda.', 'eventusapi')]);
         }
 
         $endpoint = get_option('ba_api_search_endpoint', '');

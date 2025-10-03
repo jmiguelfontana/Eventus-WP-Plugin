@@ -1,13 +1,39 @@
-.buscador-api { margin: 1rem 0 2rem; }
-.buscador-api .wp-block-group__inner-container { display:flex; gap:.75rem; align-items:center; flex-wrap:nowrap; }
-.buscador-api .wp-block-search__input { flex:1 1 auto; min-width:260px; padding:.5rem .75rem; border:1px solid var(--wp--preset--color--contrast-3, #cfcfcf); border-radius:4px; }
-.buscador-api .button { flex:0 0 auto; display:inline-flex; align-items:center; gap:.5rem; line-height:1; padding:.6rem 1rem; border-radius:4px; background:#1EA2E4; border:1px solid #1787BB; color:#fff; transition:background-color .15s ease, border-color .15s ease, color .15s ease; }
-.buscador-api .button:hover, .buscador-api .button:focus, .buscador-api .button:active { background:#1EA2E4; border-color:#1787BB; color:#fff; }
-.buscador-api .button:focus { box-shadow:0 0 0 2px rgba(30,162,228,.25); }
+.eventus-search { margin: 1rem 0 2rem; }
+.eventus-search .wp-block-group__inner-container { display:flex; gap:.75rem; align-items:center; flex-wrap:nowrap; }
+.eventus-search .wp-block-search__input { flex:1 1 auto; min-width:260px; padding:.3rem .75rem; border:1px solid var(--wp--preset--color--contrast-3, #cfcfcf); border-radius:4px; }
+
+/* Color variables to avoid duplicated literals for button styles */
+:root{
+  --ba-btn-bg: #1EA2E4;
+  --ba-btn-border: #1787BB;
+  --ba-btn-color: #fff;
+  --ba-btn-current-bg: #1479A8;
+  --ba-btn-current-border: #0F5C80;
+  --ba-btn-disabled-bg: #f0f0f0;
+  --ba-btn-disabled-border: #d0d0d0;
+  --ba-btn-disabled-color: #9a9a9a;
+}
+
+.eventus-search .button { flex:0 0 auto; display:inline-flex; align-items:center; gap:.5rem; line-height:1; padding:.6rem 1rem; border-radius:4px; }
+
+/* Shared button appearance: centralized to avoid duplicated color/border literals */
+.eventus-search .button,
+.ba-resultados--datatables .dataTables_wrapper .dt-buttons .dt-button,
+.ba-resultados--datatables .dataTables_wrapper .dataTables_paginate .paginate_button,
+.ba-resultados--datatables table.dataTable td.dt-actions .button {
+  background:var(--ba-btn-bg);
+  border:1px solid var(--ba-btn-border);
+  color:var(--ba-btn-color);
+  transition:background-color .15s ease, border-color .15s ease, color .15s ease;
+}
+.eventus-search .button:hover, 
+.eventus-search .button:focus, 
+.eventus-search .button:active { background:var(--ba-btn-bg); border-color:var(--ba-btn-border); color:var(--ba-btn-color); }
+.eventus-search .button:focus { box-shadow:0 0 0 2px rgba(30,162,228,.25); }
 
 /* En pantallas peque�as, permitir salto de l�nea */
 @media (max-width: 480px) {
-  .buscador-api .wp-block-group__inner-container { flex-wrap:wrap; }
+  .eventus-search .wp-block-group__inner-container { flex-wrap:wrap; }
 }
 
 /* Spinner en bot�n */
@@ -74,62 +100,64 @@
 
 .ba-resultados--datatables .dataTables_wrapper .dataTables_paginate .paginate_button {
   border-radius:4px;
-  background:#1EA2E4;
-  border:1px solid #1787BB;
-  color:#fff !important;
   padding:.35rem .75rem;
   margin:0 .125rem;
 }
-.ba-resultados--datatables .dataTables_wrapper .dataTables_paginate .paginate_button:hover,
-.ba-resultados--datatables .dataTables_wrapper .dataTables_paginate .paginate_button:focus,
-.ba-resultados--datatables .dataTables_wrapper .dataTables_paginate .paginate_button:active {
-  background:#1EA2E4;
-  border-color:#1787BB;
-  color:#fff !important;
-}
+
 .ba-resultados--datatables .dataTables_wrapper .dataTables_paginate .paginate_button.current {
-  background:#1479A8;
-  border-color:#0F5C80;
-  color:#fff !important;
+  background:var(--ba-btn-current-bg);
+  border-color:var(--ba-btn-current-border);
+  color:var(--ba-btn-color) !important;
   font-weight:600;
   cursor:default;
 }
 .ba-resultados--datatables .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover,
 .ba-resultados--datatables .dataTables_wrapper .dataTables_paginate .paginate_button.current:focus,
 .ba-resultados--datatables .dataTables_wrapper .dataTables_paginate .paginate_button.current:active {
-  background:#1479A8;
-  border-color:#0F5C80;
-  color:#fff !important;
+  background:var(--ba-btn-current-bg);
+  border-color:var(--ba-btn-current-border);
+  color:var(--ba-btn-color) !important;
 }
 .ba-resultados--datatables .dataTables_wrapper .dataTables_paginate .paginate_button.disabled,
 .ba-resultados--datatables .dataTables_wrapper .dataTables_paginate .paginate_button.disabled:hover,
 .ba-resultados--datatables .dataTables_wrapper .dataTables_paginate .paginate_button.disabled:focus,
 .ba-resultados--datatables .dataTables_wrapper .dataTables_paginate .paginate_button.disabled:active {
-  background:#f0f0f0;
-  border-color:#d0d0d0;
-  color:#9a9a9a !important;
+  background:var(--ba-btn-disabled-bg);
+  border-color:var(--ba-btn-disabled-border);
+  color:var(--ba-btn-disabled-color) !important;
 }
 
+/* Ensure pagination numbers (and their inner anchors) use the same toolbar text color by default.
+   Keep disabled and current states untouched (they are handled above). */
+.ba-resultados--datatables .dataTables_wrapper .dataTables_paginate .paginate_button,
+.ba-resultados--datatables .dataTables_wrapper .dataTables_paginate .paginate_button a {
+  color: var(--ba-btn-color) !important;
+}
+
+/* Keep pagination buttons visually consistent on hover/focus/active */
+.ba-resultados--datatables .dataTables_wrapper .dataTables_paginate .paginate_button:hover,
+.ba-resultados--datatables .dataTables_wrapper .dataTables_paginate .paginate_button:focus,
+.ba-resultados--datatables .dataTables_wrapper .dataTables_paginate .paginate_button:active,
+.ba-resultados--datatables .dataTables_wrapper .dataTables_paginate .paginate_button:hover a,
+.ba-resultados--datatables .dataTables_wrapper .dataTables_paginate .paginate_button:focus a,
+.ba-resultados--datatables .dataTables_wrapper .dataTables_paginate .paginate_button:active a {
+  background: var(--ba-btn-bg);
+  border-color: var(--ba-btn-border);
+  color: var(--ba-btn-color) !important;
+}
+
+
 .ba-resultados--datatables .dataTables_wrapper .dt-buttons .dt-button {
-  background:#1EA2E4;
-  border:1px solid #1787BB;
-  color:#fff !important;
   border-radius:4px;
   padding:.35rem .75rem;
 }
-.ba-resultados--datatables .dataTables_wrapper .dt-buttons .dt-button:hover,
-.ba-resultados--datatables .dataTables_wrapper .dt-buttons .dt-button:focus,
-.ba-resultados--datatables .dataTables_wrapper .dt-buttons .dt-button:active {
-  background:#1EA2E4;
-  border-color:#1787BB;
-  color:#fff !important;
-}
+
 .ba-resultados--datatables .dataTables_wrapper .dt-buttons .dt-button:disabled,
 .ba-resultados--datatables .dataTables_wrapper .dt-buttons .dt-button.disabled,
 .ba-resultados--datatables .dataTables_wrapper .dt-buttons .dt-button:disabled:hover {
-  background:#f0f0f0;
-  border-color:#d0d0d0;
-  color:#9a9a9a !important;
+  background:var(--ba-btn-disabled-bg);
+  border-color:var(--ba-btn-disabled-border);
+  color:var(--ba-btn-disabled-color) !important;
 }
 
 .ba-resultados--datatables .dataTables_wrapper .dataTables_length { margin-bottom:.75rem; }
@@ -225,23 +253,24 @@
   min-width: 0;
 }
 
-
-.buscador-api .button.is-busy,
-.buscador-api .button.is-busy:disabled {
-  background:#1EA2E4;
-  border-color:#1787BB;
-  color:#fff;
-  opacity:1;
-  cursor:wait;
+.ba-resultados--datatables table.dataTable td.dt-actions .button .ba-btn-icon {
+  color: #fff; /* ensure icon is visible */
 }
-.buscador-api .button.is-busy .ba-spinner {
+
+
+.eventus-search .button.is-busy,
+.eventus-search .button.is-busy:disabled {
+  background:var(--ba-btn-bg);
+  border-color:var(--ba-btn-border);
+  color:var(--ba-btn-color);
+  opacity:1;
+  /* Do not change the cursor; blocking is handled via overlays/pointer-events */
+}
+.eventus-search .button.is-busy .ba-spinner {
   margin-left:0;
 }
 
 /* === Buscador API overrides === */
-.buscador-api .wp-block-search__input {
-  padding: .3rem .75rem;
-}
 
 .screen-reader-text {
   position: absolute;
@@ -256,12 +285,12 @@
   white-space: nowrap;
 }
 
-.buscador-api .evt-toolbox {
+.eventus-search .evt-toolbox {
   display: inline-flex;
   gap: 4px;
 }
 
-.buscador-api .evt-toolbox .button {
+.eventus-search .evt-toolbox .button {
   border-radius: 0;
   width: 35px;
   height: 35px;
@@ -270,10 +299,10 @@
   gap: 0;
 }
 
-.buscador-api .evt-toolbox .button:first-child { border-radius: 4px 0 0 4px; }
-.buscador-api .evt-toolbox .button:last-child { border-radius: 0 4px 4px 0; }
+.eventus-search .evt-toolbox .button:first-child { border-radius: 4px 0 0 4px; }
+.eventus-search .evt-toolbox .button:last-child { border-radius: 0 4px 4px 0; }
 
-.buscador-api .evt-toolbox .button .ba-btn-icon {
+.eventus-search .evt-toolbox .button .ba-btn-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -309,7 +338,7 @@
   justify-content: center;
   background: #217346;
   border-color: #1b5e3c;
-  color: #fff !important;
+  color: var(--ba-btn-color) !important;
   padding: 0.35rem 0.6rem;
 }
 

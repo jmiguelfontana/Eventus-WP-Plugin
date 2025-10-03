@@ -11,6 +11,7 @@ if (!defined('ABSPATH')) exit;
 // Cargar clases necesarias
 require_once plugin_dir_path(__FILE__) . 'includes/class-ba-admin-settings.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-ba-shortcode-search.php';
+require_once plugin_dir_path(__FILE__) . 'includes/class-ba-shortcode-device.php';
 
 register_activation_hook(__FILE__, 'ba_eventusapi_activate');
 
@@ -93,7 +94,7 @@ add_action('wp_enqueue_scripts', function () {
         true
     );
 
-    // Script de inicialización
+    // Script de inicializaciï¿½n
     wp_register_script(
         'ba-datatables-init',
         plugins_url('assets/buscador-api.js', __FILE__),
