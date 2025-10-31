@@ -103,6 +103,22 @@ add_action('wp_enqueue_scripts', function () {
         true
     );
 
+    wp_register_script(
+        'ba-jsbarcode',
+        'https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js',
+        [],
+        '3.11.5',
+        true
+    );
+
+    wp_register_script(
+        'ba-device-barcode',
+        plugins_url('assets/device-barcode.js', __FILE__),
+        ['ba-jsbarcode'],
+        '1.0.0',
+        true
+    );
+
     // Pasar ajaxurl a JS
     wp_localize_script('ba-datatables-init', 'baAjax', [
         'url'   => admin_url('admin-ajax.php'),
