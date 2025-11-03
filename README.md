@@ -73,4 +73,6 @@ Las librerias externas (DataTables, Buttons, Font Awesome, JsZip, JsBarcode) se 
 - Prueba en staging antes de publicar para confirmar que la API Eventus responde y que los CDN son accesibles desde tu hosting.
 
 ## Licencia
-Define la licencia del proyecto antes de publicar el repositorio (por ejemplo, MIT, GPLv2, etc.). Añade el archivo `LICENSE` correspondiente para aclarar el uso permitido.
+Este proyecto se distribuye bajo la licencia [Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)](https://creativecommons.org/licenses/by-nc/4.0/).
+
+Puedes reutilizar, adaptar y compartir el plugin siempre que cites a los autores originales y no lo utilices con fines comerciales. Consulta el texto completo de la licencia en el enlace anterior y añade el archivo `LICENSE` al repositorio para acompañar esta declaracion.
