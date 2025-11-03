@@ -4,11 +4,11 @@
 
 /* Color variables to avoid duplicated literals for button styles */
 :root{
-  --ba-btn-bg: #1EA2E4;
-  --ba-btn-border: #1787BB;
+  --ba-btn-bg: #00709B;
+  --ba-btn-border: #00709B;
   --ba-btn-color: #fff;
-  --ba-btn-current-bg: #1479A8;
-  --ba-btn-current-border: #0F5C80;
+  --ba-btn-current-bg: #00709B;
+  --ba-btn-current-border: #00709B;
   --ba-btn-disabled-bg: #f0f0f0;
   --ba-btn-disabled-border: #d0d0d0;
   --ba-btn-disabled-color: #9a9a9a;
