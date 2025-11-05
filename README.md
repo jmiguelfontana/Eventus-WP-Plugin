@@ -1,6 +1,6 @@
 # Eventus API
 
-Plugin de WordPress que integra sitios corporativos con la plataforma UDITrace para consultar y mostrar dispositivos medicos en tiempo real. Proporciona formularios accesibles, exportacion de datos y fichas detalladas listas para incrustar en cualquier pagina mediante shortcodes.
+Plugin de WordPress que integra sitios corporativos con la plataforma [UDITrace](https://uditrace.com) para consultar y mostrar dispositivos medicos en tiempo real. Proporciona formularios accesibles, exportacion de datos y fichas detalladas listas para incrustar en cualquier pagina mediante shortcodes.
 
 ## Caracteristicas
 - Configuracion centralizada de endpoints y credenciales de la API Eventus.
